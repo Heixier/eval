@@ -1,6 +1,6 @@
 # bash-scripts
 
-Some bash scripts I wrote
+Collection of some of my bash scripts
 
 ## Multirunner
 ![image](https://github.com/user-attachments/assets/9b174b0d-59b7-4faf-884b-bb08c2fed84f)
