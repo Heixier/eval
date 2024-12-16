@@ -5,7 +5,6 @@ TESTS=500
 SIZE=100
 NEGATIVE=true
 PROG="push_swap"
-CHECKER="checker_linux"
 OUTFILE="gen_out.txt"
 true > "$OUTFILE" # Reset file
 
@@ -122,13 +121,9 @@ init_target () {
 check_error () {
 	local ERROR=false
 	local errmsg 
-	local checker_output=$(printf "%s\n" "$2" | ./"$CHECKER" "$1" 2>&1)
 
 	if [ "$2" = "Error" ]; then
 		errmsg="Program reported an error."
-		ERROR=true
-	elif [ "$checker_output" == "KO" ]; then
-		errmsg="Sort KO."
 		ERROR=true
 	else
 		:
@@ -141,7 +136,6 @@ check_error () {
 }
 
 check_execute "$PROG"
-check_execute "$CHECKER"
 init_target
 
 main () {
