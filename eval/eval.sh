@@ -1,14 +1,7 @@
 #!/bin/bash
 
 # Colours
-LIGHT_GREEN=$'\033[38;5;46;1m'
-LIGHT_BLUE=$'\033[38;5;75;1m'
-RED=$'\033[38;5;160;1m'
-YELLOW=$'\033[38;5;184;1m'
-ORANGE=$'\033[38;5;208;1m'
-LIGHT_GREY=$'\033[38;5;242;1m'
-UNDERLINE=$'\033[4m'
-RESET=$'\033[0m'
+source <(curl -s "https://raw.githubusercontent.com/Heixier/lib/refs/heads/main/colors")
 
 prog_name="$1"
 allowed_funcs=( "${@:2}" )
