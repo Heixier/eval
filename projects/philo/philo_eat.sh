@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Script to display the actual minimum times eaten
+
 source <(curl -s "https://raw.githubusercontent.com/Heixier/lib/refs/heads/main/colors")
 
 PROGRAM_NAME="philo"
