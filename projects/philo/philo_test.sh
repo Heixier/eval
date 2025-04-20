@@ -40,15 +40,18 @@ begin_monitor () {
 	local running=1
 	local idx=0
 	local fd
+	local finished=()
+
 	while (( $running ))
 	do
 		running=0
 		idx=0
 		for pid in "${process_ids[@]}"
 		do
+
 			if kill -0 "$pid" 2>/dev/null; then
 				exec {fd}<"${named_pipes[$idx]}"
-				while IFS= read -r -t 0.1 -u $fd line
+				while IFS= read -r -t 2 -u $fd line
 				do
 					if [[ "$line" == *"died" ]]; then
 						tput cup $idx
@@ -56,13 +59,21 @@ begin_monitor () {
 						tput el
 						printf "process %d has died\n" $idx
 						kill "${process_ids[$idx]}" 2>/dev/null
+						finished+=("$idx")
 						break
 					fi
 				done
 				exec {fd}<&-
 				running=1
+			else
+				if ! [[ "$finished[@]" =~ "$idx" ]]; then
+					tput cup $idx
+					printf "\r"
+					tput el
+					printf "dead: process %d has finished eating!\n" $idx 
+					finished+=("$idx")
+				fi
 			fi
-			# printf "pid: %s: idx: %d\n" "$pid" $idx
 			idx=$(( $idx + 1 ))
 		done
 		sleep 0.1
@@ -91,4 +102,4 @@ trap cleanup EXIT INT TERM
 begin_test
 
 wait
-tput rc
+# tput rc
