@@ -3,10 +3,10 @@
 source <(curl -s "https://raw.githubusercontent.com/Heixier/lib/refs/heads/main/colors")
 
 test_cases=(
-	"5 800 200 100 5"
-	"5 800 200 1000 5"
-	"5 800 200 100 5"
-	"5 800 200 1000 5"
+	"5 1600 200 200"
+	"2 800 200 200"
+	"2 800 200 100"
+	"2 800 200 100"
 )
 
 named_pipes=()
@@ -17,9 +17,7 @@ run_philo () {
 	shift 1
 
 	local pipe_name="/tmp/philo_test_$id"
-	if ! [[ -f "$pipe_name" ]]; then
-		mkfifo "$pipe_name"
-	fi
+	mkfifo "$pipe_name" 2>/dev/null
 	./philo $@ > "$pipe_name" &
 	process_ids+=("$!")
 	named_pipes+=("$pipe_name")
@@ -51,13 +49,14 @@ begin_monitor () {
 
 			if kill -0 "$pid" 2>/dev/null; then
 				exec {fd}<"${named_pipes[$idx]}"
-				while IFS= read -r -t 2 -u $fd line
+				while IFS= read -r -t 1 -u $fd line
 				do
 					if [[ "$line" == *"died" ]]; then
 						tput cup $idx
 						printf "\r"
 						tput el
-						printf "process %d has died\n" $idx
+						printf "%s: %s%s%s\n" "${test_cases[$idx]}" "$ORANGE" "Stopped 🤔" "$RESET"
+						tput rc
 						kill "${process_ids[$idx]}" 2>/dev/null
 						finished+=("$idx")
 						break
@@ -66,11 +65,12 @@ begin_monitor () {
 				exec {fd}<&-
 				running=1
 			else
-				if ! [[ "$finished[@]" =~ "$idx" ]]; then
+				if ! [[ " ${finished[@]} " =~ "$idx" ]]; then
 					tput cup $idx
 					printf "\r"
 					tput el
-					printf "dead: process %d has finished eating!\n" $idx 
+					printf "%s: %s%s%s\n" "${test_cases[$idx]}" "$ORANGE" "Stopped 🤔" "$RESET"
+					tput rc
 					finished+=("$idx")
 				fi
 			fi
@@ -89,7 +89,7 @@ begin_test () {
 
 	for test in "${test_cases[@]}"
 	do
-		printf "%s: %s%${max_len}s%s\n" "$test" "$LIGHT_GREEN" "Eating 😋" "$RESET"
+		printf "%s: %s%s%s\n" "$test" "$LIGHT_GREEN" "Running 😋" "$RESET"
 		run_philo $i "$test"
 		i=$(( $i + 1))
 	done
@@ -102,4 +102,3 @@ trap cleanup EXIT INT TERM
 begin_test
 
 wait
-# tput rc
