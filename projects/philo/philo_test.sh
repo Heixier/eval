@@ -2,82 +2,47 @@
 
 source <(curl -s "https://raw.githubusercontent.com/Heixier/lib/refs/heads/main/colors")
 
+lockfile=/tmp/philo_lock.lock
+
+running=()
 test_cases=(
-	"5 1600 200 200"
-	"2 800 200 200"
-	"2 800 200 100"
-	"2 800 200 100"
+	"5 800 200 200 5"
+	"4 410 200 2000"
+	"4 410 200 1500"
+	"4 410 200 1500"
+	"4 410 200 1500"
+	"4 410 200 1500"
 )
 
-named_pipes=()
-process_ids=()
+lock () {
+	while ! mkdir "$lockfile" 2>/dev/null
+	do
+		sleep 0.1
+	done
+}
+
+unlock () {
+	rmdir "$lockfile" 2>/dev/null
+}
+
+shift_to_line () {
+	tput cup $(( $header_len + $1 )) 0
+}
 
 run_philo () {
 	local id=$1
 	shift 1
 
-	local pipe_name="/tmp/philo_test_$id"
-	mkfifo "$pipe_name" 2>/dev/null
-	./philo $@ > "$pipe_name" &
-	process_ids+=("$!")
-	named_pipes+=("$pipe_name")
-}
-
-cleanup () {
-	for pid in "${process_ids[@]}"
+	./philo $@ | while IFS= read -r line
 	do
-		kill "$pid" 2>/dev/null
+		if [[ "$line" == *"died" ]]; then
+			break;
+		fi
 	done
-	for pipe in "${named_pipes[@]}"
-	do
-		rm "$pipe" 2>/dev/null
-	done
-}
-
-begin_monitor () {
-	local running=1
-	local idx=0
-	local fd
-	local finished=()
-
-	while (( $running ))
-	do
-		running=0
-		idx=0
-		for pid in "${process_ids[@]}"
-		do
-
-			if kill -0 "$pid" 2>/dev/null; then
-				exec {fd}<"${named_pipes[$idx]}"
-				while IFS= read -r -t 1 -u $fd line
-				do
-					if [[ "$line" == *"died" ]]; then
-						tput cup $idx
-						printf "\r"
-						tput el
-						printf "%s: %s%s%s\n" "${test_cases[$idx]}" "$ORANGE" "Stopped 🤔" "$RESET"
-						tput rc
-						kill "${process_ids[$idx]}" 2>/dev/null
-						finished+=("$idx")
-						break
-					fi
-				done
-				exec {fd}<&-
-				running=1
-			else
-				if ! [[ " ${finished[@]} " =~ "$idx" ]]; then
-					tput cup $idx
-					printf "\r"
-					tput el
-					printf "%s: %s%s%s\n" "${test_cases[$idx]}" "$ORANGE" "Stopped 🤔" "$RESET"
-					tput rc
-					finished+=("$idx")
-				fi
-			fi
-			idx=$(( $idx + 1 ))
-		done
-		sleep 0.1
-	done
+	lock
+	shift_to_line $id
+	printf "\t%s: %s%s%s\n" "${@}" "$RED" "Stopped 🤔" "$RESET"
+	unlock
 	return 0
 }
 
@@ -86,19 +51,61 @@ begin_test () {
 	local process_name
 
 	clear
-
+	print_header
+	tput civis
 	for test in "${test_cases[@]}"
 	do
-		printf "%s: %s%s%s\n" "$test" "$LIGHT_GREEN" "Running 😋" "$RESET"
-		run_philo $i "$test"
+		printf "\t%s: %s%s%s\n" "$test" "$LIGHT_GREEN" "Running 😋" "$RESET"
+		run_philo $i "$test" &
+		running+=($!)
 		i=$(( $i + 1))
 	done
-	tput sc
-	begin_monitor
+
 }
 
-trap cleanup EXIT INT TERM
+timer () {
+	while :
+	do
+		lock
+		shift_to_line $((${#test_cases[@]} + 1))
+		printf "%sTime elapsed: %ds \n%s" "$LIGHT_BLUE" $SECONDS "$RESET"
+		unlock
+		sleep 1
+	done
+}
+
+print_header () {
+	lock
+	printf "%sDining philosophers!%s\n" "$PINK" "$RESET"
+	printf "%sDocumentation is still incomplete%s\n" "$LIGHT_GREY" "$RESET"
+	printf "\n"
+	header_len=3 #worst hardcode in history
+	shift_to_line 0
+	unlock
+	return 0
+}
+
+cleanup () {
+	tput cnorm
+	lock
+	shift_to_line $(( $header_len + ${#test_cases[@]}))
+	printf "\r%sstopping...%s\n" "$YELLOW" "$RESET"
+	shift_to_line $(( $header_len + ${#test_cases[@]}))
+	unlock
+	exit
+}
+
+trap cleanup EXIT INT TERM QUIT
 
 begin_test
+timer &
+timer_pid=$!
 
-wait
+tput sc
+
+for pid in "${running[@]}"
+do
+	wait $pid 2>/dev/null
+done
+kill $timer_pid
+shift_to_line $(( $header_len + ${#test_cases[@]}))
