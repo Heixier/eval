@@ -18,22 +18,22 @@ test_cases=(
 )
 
 print_header () {
-	local cpu_model="$(lscpu -e=MODELNAME | awk 'NR==2 { print }')"
+	local cpu_model="$(lscpu | grep "Model name:" | awk '{ $1=$2=""; $0=$0; $1=$1; print}')"
 	local cpu_arch="$(lscpu | grep 'Architecture: ' | awk '{ print $2}')"
 	local cpu_cores="$(lscpu -e=CPU | awk 'NR>1 {count++} END {print count}')"
-	local cpu_cache="$(lscpu -C=NAME,ONE-SIZE | awk 'NR>1 { printf "%s%s: %s", sep, $1, $2; sep=" | " } END { print ""}')"
+	local cpu_cache="$(lscpu -C | awk 'NR>1 { printf "%s%s: %s", sep, $1, $2; sep=" | " } END { print ""}')"
 
 	local warning
 	local thread_total=$(count_thread_total)
 	if (( thread_total * 100 > cpu_cores * 75 )); then
-		warning="${ORANGE}Warning: ${thread_total} threads exceeds the recommended stable limit (75% of CPU count)."
+		warning="${ORANGE}Warning: ${thread_total} threads exceeds the recommended stable limit (75% of processor count)."
 	fi
 
 	local header_arr=(
 		"${LIGHT_GREY}SYSTEM SPECIFICATIONS${RESET}"
-		"${LIGHT_GREY}Model: ${cpu_model} (Arch: ${cpu_arch})${RESET}"
-		"${LIGHT_GREY}CPUs:  ${cpu_cores} Cores/Threads${RESET}"
-		"${LIGHT_GREY}Cache: ${cpu_cache}${RESET}"
+		"${LIGHT_GREY}Model:       ${cpu_model} (Arch: ${cpu_arch})${RESET}"
+		"${LIGHT_GREY}Processors:  ${cpu_cores} Cores/Threads${RESET}"
+		"${LIGHT_GREY}Cache:       ${cpu_cache}${RESET}"
 		""
 		"${PURPLE}Begin test(s)!${RESET}"
 		"${warning}"
@@ -93,19 +93,31 @@ check_for_prog () {
 		make
 		if ! [ -f "$prog" ]; then
 			print "%s Could not find \'%s\'!%s\n" "$RED" "$prog" "$RESET"
+			exit 1
 		fi
 	fi
 }
 
 run_philo () {
 	local id=$1
+	shift 1
+	local args=($@)
 	local last_timestamp=0
 	local current_timestamp=0
 	local death_flag=0
 	local status="Done! 😋"
 	local status_color="$ORANGE"
 	local last_line
-	shift 1
+	local eat_limit=0
+	local eat_target=0
+	local eat_results=()
+	local min_eat=0
+
+	if (( ${#args[@]} == 5 )); then
+		eat_limit=1
+		eat_target=${args[4]}
+		sleep 5
+	fi
 
 	while IFS= read -r line
 	do
@@ -130,7 +142,17 @@ run_philo () {
 		fi
 		last_timestamp="$(awk '{ print $1 }' <(printf "%s" "$line"))"
 		last_line="$line"
+		if (( $eat_limit )) && [[ "$line" == *"eating" ]]; then
+			eat_results+=("$line")
+		fi
 	done < <(./"${prog}" $@) # Prevent running | in subshell so I can still use my local variables
+	if (( $eat_limit )); then
+		min_eat=$(printf "%s\n" "${eat_results[@]}" | awk '{ print $2 }' | sort | uniq -c | sort -n | awk 'NR==1 { print $1 }')
+		if (( min_eat < eat_target )); then
+			status="Still Hungry 🤤"
+			status_color="$RED"
+		fi
+	fi
 	lock
 	shift_to_line $id
 	printf "\t%s%s%s %-${longest_line}s : %s%s%s\n" "$LIGHT_GREY" "./$prog" "$RESET" "${@}" "$status_color" "$status" "$RESET"
