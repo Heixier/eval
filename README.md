@@ -66,8 +66,10 @@ Error cases:
 At the moment, you will need to edit the script to change the default test cases. Otherwise, if you just want to run with the defaults:
 
     bash <(curl -s https://raw.githubusercontent.com/Heixier/eval/refs/heads/main/projects/philo/philo_test.sh)
+<details><summary>
+    <H3>Example parameters</H3>
+</summary>
 
-### Example parameters
 Non-exhaustive list of test cases, but these cover the main logic cases
 
 * Run indefinitely if program is really good (do not run multiple tests simultaneously with these edge cases)
@@ -86,3 +88,4 @@ Non-exhaustive list of test cases, but these cover the main logic cases
   *     1 800 200 200
   *     3 600 200 400
   *     4 399 200 200
+</details>
