@@ -11,14 +11,22 @@ They are separated into two categories at the moment: general and project-specif
 
 This script is designed to be run at the start of C project evaluations as a standard baseline check. 
 
-It automatically runs norminette, header author checks, makefile checks, and forbidden function checks on the provided program name
+It automatically:
+* Runs norminette
+* Shows header authors
+* Do standard makefile rule checks (clean, fclean, re), relink, header update check
+* Runs or displays forbidden function based on the provided program name and input args
+
+For the forbidden function check, it is important to quote all the allowed functions. 
+
+To use it, simply copy and paste the list of allowed functions straight from the `subject.pdf` (after the program name)
 
 Example usage
 
-    ./eval.sh libft.a
-Or curl
+    ./eval.sh libft.a "malloc, free, write"
+If you don't want to download it, substitute `./eval.sh` with the following:
 
-    bash <(curl https://raw.githubusercontent.com/Heixier/eval/refs/heads/main/general/eval.sh) libft.a
+    bash <(curl -s https://raw.githubusercontent.com/Heixier/eval/refs/heads/main/general/eval.sh)
 
 ## Multirunner
 ![image](https://github.com/user-attachments/assets/9b174b0d-59b7-4faf-884b-bb08c2fed84f)
@@ -29,7 +37,7 @@ Runs a program multiple times with a set of different arguments.
 - Useful for testing simple programs with different starting parameters e.g. different maps
 ####
 
-    bash <(curl https://raw.githubusercontent.com/Heixier/eval/refs/heads/main/general/multirunner.sh)
+    bash <(curl -s https://raw.githubusercontent.com/Heixier/eval/refs/heads/main/general/multirunner.sh)
 
 # Project-specific
 
