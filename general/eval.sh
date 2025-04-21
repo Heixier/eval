@@ -41,18 +41,37 @@ header_check () {
 }
 
 makefile_check () {
+	if ! [[ -f "Makefile" ]]; then
+		printf "%sNo 'Makefile' found%s\n" "$RED" "$RESET"
+		return 1
+	fi
+
+	printf "%sChecking Makefile rules...%s" "$LIGHT_BLUE" "$RESET"
+
+	# Do basic rule check
 	local rules=(
 		"clean"
 		"fclean"
 		"re"
 	)
+
 	for rule in "${rules[@]}"
 	do
-		if ! make "$rule"; then
+		if ! make -n "$rule" >/dev/null 2>&1; then
+			printf "\r"; tput el
 			printf "%sRule %s not found!%s\n" "$RED" "$rule" "$RESET"
+			return 1
 		fi
 	done
-	if "$(make && make)" | grep "Nothing to be done for 'all'
+	make fclean >/dev/null 2>&1 && make >/dev/null 2>&1
+	make_relink="$(make 2>&1)"
+	if ! [[ "$make_relink" == *"Nothing to be done for"* ]]; then
+		printf "\r"; tput el
+		printf "Make relinked!\n"
+		return 1
+	fi
+	printf "\r"; tput el
+	printf "Make clear!\n"
 }
 
 
@@ -62,7 +81,6 @@ nm_check () {
 		return 1
 	fi
 	printf "%sChecking for forbidden functions...%s" "$LIGHT_BLUE" "$RESET"
-	printf "\r"; tput el
 	if [[ $1 ]]; then
 		local used_functions=($(nm -u $1 | awk '{$1=$1};1' | awk -vORS="" -F"[ @]" '/U/ && !/__/{ if (NR>1) printf ", ";print $2 } END { printf "\n" }'))
 
@@ -82,6 +100,7 @@ nm_check () {
 
 			local mismatches="$(comm -23 <(printf "%s\n" "${sorted_used[@]}") <(printf "%s\n" "${sorted[@]}"))"
 		fi
+		printf "\r"; tput el
 		if [[ $mismatches ]]; then
 			printf "%sForbidden functions found!\n%s%s\n%s\n" "$RED" "$RESET" "$mismatches"
 		else
