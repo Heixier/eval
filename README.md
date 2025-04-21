@@ -41,7 +41,7 @@ Generates multiple random values for testing/benchmarking 42's push_swap sorting
 - Different flags and settings
 - Produces an output file
 
-Included is my own [push_swap](https://github.com/Heixier/veryc/tree/main/push_swap) and the external checker program for testing.
+Included is the external checker program for testing.
 
 ## Philosophers
 ### philo_test.sh
