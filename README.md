@@ -63,7 +63,7 @@ Error cases:
 * Messages appear after death message
 * At least one philosopher did not hit eat limit on exit
 
-At the moment, you will need to edit the script to change the default test cases. Otherwise, if you just want to run with the defaults:
+At the moment, you will need to edit the script to change the default test cases. Otherwise, if you just want to run with whatever I last set it to:
 
     bash <(curl -s https://raw.githubusercontent.com/Heixier/eval/refs/heads/main/projects/philo/philo_test.sh)
 <details><summary>
