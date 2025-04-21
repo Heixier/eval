@@ -180,6 +180,7 @@ cleanup () {
 		kill $pid 2>/dev/null
 	done
 	kill $timer_pid 2>/dev/null
+	stty echo
 	exit
 }
 
@@ -188,6 +189,7 @@ trap cleanup EXIT SIGINT SIGQUIT
 # Begin to do stuff
 unlock
 tput civis
+stty -echo
 check_for_prog
 get_longest_line
 begin_test
