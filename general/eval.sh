@@ -30,7 +30,7 @@ norm_check () {
 	fi
 }
 
-header_check() {
+header_check () {
 	printf "%sChecking header authors...%s" "$LIGHT_BLUE" "$RESET"
 	local authors="$(find . -name "*.c" -o -name "*.h" -type f | 
 	xargs -I {} awk 'FNR==6 { print $3 } FNR==8 { print $6 } FNR==9 { print $6;nextfile }' {} | sort -u)"
@@ -40,7 +40,23 @@ header_check() {
 	# printf "%s%sHeader author email list\n%s%s\n\n" "$UNDERLINE" "$LIGHT_BLUE" "$RESET" "$emails"
 }
 
-nm_check() {
+makefile_check () {
+	local rules=(
+		"clean"
+		"fclean"
+		"re"
+	)
+	for rule in "${rules[@]}"
+	do
+		if ! make "$rule"; then
+			printf "%sRule %s not found!%s\n" "$RED" "$rule" "$RESET"
+		fi
+	done
+	if "$(make && make)" | grep "Nothing to be done for 'all'
+}
+
+
+nm_check () {
 	if ! command -v "nm" >/dev/null; then
 		printf "%snm not found! Skipping...%s\n\n" "$RED" "$RESET"
 		return 1
@@ -78,7 +94,7 @@ nm_check() {
 
 }
 
-norm_check
-header_check
-# MAKEFILE CHECK???? QUICK
-nm_check $@
+# norm_check
+# header_check
+makefile_check
+# nm_check $@
