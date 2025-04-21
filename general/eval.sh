@@ -80,4 +80,5 @@ nm_check() {
 
 norm_check
 header_check
+# MAKEFILE CHECK???? QUICK
 nm_check $@
