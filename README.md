@@ -7,13 +7,15 @@ They are separated into two categories at the moment: general and project-specif
 # General
 
 ## eval.sh
+![image](https://github.com/user-attachments/assets/195bb6de-4f7c-4e82-afd5-83f9572a6838)
+
 This script is designed to be run at the start of C project evaluations as a standard baseline check. 
 
 It automatically runs norminette, header author checks, makefile checks, and forbidden function checks on the provided program name
 
-Example usage (edit the name yourself)
+Example usage
 
-    ./eval.sh minishell
+    ./eval.sh libft.a
 Or curl
 
     bash <(curl https://raw.githubusercontent.com/Heixier/eval/refs/heads/main/general/eval.sh) libft.a
