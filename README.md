@@ -1,5 +1,7 @@
 # bash-scripts
 
+README IS VERY OUTDATED
+
 Collection of some of my bash scripts.
 
 ## Multirunner
