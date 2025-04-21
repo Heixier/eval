@@ -5,7 +5,7 @@
 
 source <(curl -s "https://raw.githubusercontent.com/Heixier/lib/refs/heads/main/colors")
 
-printf "%sTHIS SCRIPT IS DEPRECATED, USE THE MAIN PHILO_TEST INSTEAD\n%s" "$ORANGE" "$RESET"
+printf "%sTHIS SCRIPT IS DEPRECATED, USE THE MAIN PHILO_TEST INSTEAD\n%s" "$ORANGE" "$RESET" 
 
 PROGRAM_NAME="philo"
 
