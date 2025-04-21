@@ -5,9 +5,14 @@ source <(curl -s "https://raw.githubusercontent.com/Heixier/lib/refs/heads/main/
 lockfile=/tmp/philo_lock.lock
 prog="philo"
 longest_line=0
+prog="philo"
+longest_line=0
 
 running=()
 test_cases=(
+	"5 800 200 200"
+	"4 410 200 200"
+	"4 410 200 200 7"
 	"5 800 200 200"
 	"4 410 200 200"
 	"4 410 200 200 7"
@@ -168,6 +173,8 @@ timer () {
 
 interrupt_msg () {
 	return
+interrupt_msg () {
+	return
 }
 
 cleanup () {
@@ -177,7 +184,19 @@ cleanup () {
 	shift_to_line $((2 + ${#test_cases[@]})) # Don't overwrite the timer
 	printf "\r%sstopping...%s\n" "$LIGHT_GREY" "$RESET"
 	shift_to_line $((3 + ${#test_cases[@]}))
+	# THIS IS VERY HARDCODE
+	shift_to_line $((2 + ${#test_cases[@]})) # Don't overwrite the timer
+	printf "\r%sstopping...%s\n" "$LIGHT_GREY" "$RESET"
+	shift_to_line $((3 + ${#test_cases[@]}))
 	unlock
+
+	# Important for SIGQUIT as SIGQUIT does not terminate gracefully
+	for pid in "${running[@]}"
+	do
+		kill $pid 2>/dev/null
+	done
+	kill $timer_pid 2>/dev/null
+	# Reset cursor position to bottom
 
 	# Important for SIGQUIT as SIGQUIT does not terminate gracefully
 	for pid in "${running[@]}"
