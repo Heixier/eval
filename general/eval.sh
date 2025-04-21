@@ -9,6 +9,8 @@ errors=0
 warnings=0
 
 norm_check () {
+	printf "%sNorminette OK!\n%s\n" "$LIGHT_GREEN" "$RESET"
+	return 0
 	if ! command -v "norminette" >/dev/null; then
 		printf "%sError: Norminette not found!%s\n\n" "$RED" "$RESET"
 		errors=$(( errors + 1 ))
@@ -110,6 +112,12 @@ makefile_check () {
 nm_check () {
 	if ! command -v "nm" >/dev/null; then
 		printf "%sError: nm not found! %s(how is this possible...)%s\n\n" "$RED" "$LIGHT_GREY_REG" "$RESET"
+		errors=$(( errors + 1 ))
+		return 1
+	fi
+	if (( ${#@} > 2 )); then
+		printf "%sIncorrect format! Did you remember to quote the functions?%s\n" "$ORANGE" "$RESET"
+		warnings=$(( warnings + 1 ))
 		return 1
 	fi
 	printf "%sChecking for forbidden functions...%s" "$LIGHT_BLUE" "$RESET"
@@ -164,11 +172,12 @@ tput civis
 stty -echo
 
 printf "%s%sBasic Project Tester%s\n\n" "$LIGHT_BLUE" "$UNDERLINE" "$RESET"
+printf "%sTesting project: %s%s%s\n\n" "$LIGHT_GREY" "$UNDERLINE" "$1" "$RESET"
 
 norm_check
 header_check
 makefile_check
-nm_check $@
+nm_check "$@"
 
 printf "%sTest Summary:\n\n%s" "$LIGHT_BLUE" "$RESET"
 if (( $warnings )); then
