@@ -89,18 +89,24 @@ makefile_check () {
 	printf "\r"; tput el
 	printf "%sChecking if header update triggers Makefile...%s" "$LIGHT_BLUE" "$RESET"
 
-	touch **.h
-	header_check=$(make)
-	local something_done=0
-	for output in "${header_check}"
-	do
-		if printf "%s\n" "$output" | grep -qv "Nothing to be done"; then
-			something_done=1
+	if find . | grep -q ".h"; then
+		touch **.h
+		header_check=$(make)
+		local something_done=0
+		for output in "${header_check}"
+		do
+			if printf "%s\n" "$output" | grep -qv "Nothing to be done"; then
+				something_done=1
+			fi
+		done
+		if ! (( $something_done )); then
+			printf "\r"; tput el
+			printf "%sMakefile did not trigger an update when headers were changed!%s\n\n" "$YELLOW" "$RESET"
+			warnings=$(( warnings + 1 ))
+			return 1
 		fi
-	done
-	if ! (( $something_done )); then
-		printf "\r"; tput el
-		printf "%sMakefile did not trigger an update when headers were changed!%s\n\n" "$YELLOW" "$RESET"
+	else
+		printf "%sNo header files found (?!) %sCHECK THE CODE%s\n\n" "$YELLOW" "$LIGHT_GREY" "$RESET"
 		warnings=$(( warnings + 1 ))
 		return 1
 	fi
