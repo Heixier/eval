@@ -9,8 +9,7 @@ errors=0
 warnings=0
 
 norm_check () {
-	printf "%sNorminette OK!\n%s\n" "$LIGHT_GREEN" "$RESET"
-	return 0
+	printf "%sNorminette -v: %s%s\n\n" "$LIGHT_GREY" "$(norminette -v)" "$RESET"
 	if ! command -v "norminette" >/dev/null; then
 		printf "%sError: Norminette not found!%s\n\n" "$RED" "$RESET"
 		errors=$(( errors + 1 ))
@@ -62,11 +61,14 @@ makefile_check () {
 
 	# Do basic rule check
 	local rules=(
+		"all"
 		"clean"
 		"fclean"
 		"re"
 	)
-
+	if [[ $prog_name ]]; then
+		rules+=("$prog_name")
+	fi
 	for rule in "${rules[@]}"
 	do
 		if ! make "$rule" >/dev/null 2>&1; then
@@ -122,8 +124,13 @@ nm_check () {
 		return 1
 	fi
 	if (( ${#@} > 2 )); then
-		printf "%sIncorrect format! Did you remember to quote the functions?%s\n" "$ORANGE" "$RESET"
+		printf "%sIncorrect format! Did you remember to quote the functions?%s\n\n" "$ORANGE" "$RESET"
 		warnings=$(( warnings + 1 ))
+		return 1
+	fi
+	if ! [[ -f $prog_name ]]; then
+		printf "%sProgram %s%s%s not found! %s(did you spell it correctly?)%s\n\n" "$RED" "$LIGHT_GREY" "$prog_name" "$RED" "$LIGHT_GREY" "$RESET"
+		errors=$(( errors + 1 ))
 		return 1
 	fi
 	printf "%sChecking for forbidden functions...%s" "$LIGHT_BLUE" "$RESET"
@@ -151,17 +158,26 @@ nm_check () {
 			printf "%sForbidden functions found!\n%s%s\n%s\n" "$RED" "$RESET" "$mismatches"
 			errors=$(( errors + 1 ))
 		elif ! [[ $2 ]]; then
-			printf "%sFunctions used (manual check mode):\n%sTo automate function checking, copy the list from the PDF (and quote them)\ne.g ./%s program_name \"list of functions\"\n%s%s\n"  "$LIGHT_BLUE" "$LIGHT_GREY" "$(basename $0)" "$RESET" "$(printf "%s\n" "${sorted_used[@]}")"
+			printf "%sFunction checker (manual check mode):\n%sTo automate function checking, copy the list from the PDF (and quote them)\ne.g ./%s program_name \"list of functions\"\n\n%sUsed functions: %s%s\n\n"  "$LIGHT_BLUE" "$LIGHT_GREY" "$(basename $0)" "$ORANGE" "$RESET" "$(printf "%s\n" "${sorted_used[@]}" | awk '{ printf "%s%s", sep, $0; sep=", " } END { print "" }')"
 		else
 			printf "%sNo forbidden functions found!%s\n\n" "$PURPLE" "$RESET"
 			return 0
 		fi
-		printf "%sReminder: %sthere may be false positives; double check the source code!%s\n\n" "$YELLOW" "$LIGHT_GREY" "$RESET"
+		printf "%sReminder: %sthere may be false positives; double check the source code!%s\n\n" "$PURPLE" "$LIGHT_GREY" "$RESET"
 	else
 		printf "%sWarning: no program name provided, skipping forbidden function check%s\n\n" "$YELLOW" "$RESET"
 		warnings=$(( warnings + 1 ))
 	fi
 
+}
+
+header () {
+	clear
+	tput civis
+	stty -echo
+
+	printf "%s%sBasic Project Tester%s\n\n" "$LIGHT_BLUE" "$UNDERLINE" "$RESET"
+	printf "%sProject name: %s%s%s\n\n" "$LIGHT_GREY" "$UNDERLINE" "$1" "$RESET"
 }
 
 cleanup () {
@@ -174,12 +190,7 @@ cleanup () {
 trap cleanup EXIT SIGINT SIGQUIT
 # Main
 
-tput civis
-stty -echo
-
-printf "%s%sBasic Project Tester%s\n\n" "$LIGHT_BLUE" "$UNDERLINE" "$RESET"
-printf "%sTesting project: %s%s%s\n\n" "$LIGHT_GREY" "$UNDERLINE" "$1" "$RESET"
-
+header
 norm_check
 header_check
 makefile_check
