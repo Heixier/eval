@@ -129,7 +129,7 @@ nm_check () {
 		return 1
 	fi
 	if ! [[ -f $prog_name ]]; then
-		printf "%sProgram %s%s%s not found! %s(did you spell it correctly?)%s\n\n" "$RED" "$LIGHT_GREY" "$prog_name" "$RED" "$LIGHT_GREY" "$RESET"
+		printf "%sProgram/library %s%s%s not found! %s(did you spell it correctly?)%s\n\n" "$RED" "$LIGHT_GREY" "$prog_name" "$RED" "$LIGHT_GREY" "$RESET"
 		errors=$(( errors + 1 ))
 		return 1
 	fi
