@@ -39,6 +39,8 @@ runner () {
 	print_arr "$@"
 	for arg in "$@"; do
 		printf "\e[38;5;118;1m%s\n\e[38;5;14mRunning: "$prog" "$arg"\n\e[38;5;226;1m%s\e[0m\n" "$sep" "$sep"
+		cat "$arg"
+		printf "\n\e[38;5;226;1m%s\n" "$sep"
 		if [[ $memcheck == 1 ]]; then
 			printf "\e[38;5;207mvalgrind flags: %s\e[0m\n" "${valflags[*]}"
 			valgrind "${valflags[@]}" ./"$prog" "$arg"
