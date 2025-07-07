@@ -92,7 +92,7 @@ makefile_check () {
 	printf "%sChecking if header update triggers Makefile...%s" "$LIGHT_BLUE" "$RESET"
 
 	if find . | grep -q ".h"; then
-		touch **.h
+		find . -name "*.h" -type f -exec touch {} \;
 		header_check=$(make)
 		local something_done=0
 		for output in "${header_check}"

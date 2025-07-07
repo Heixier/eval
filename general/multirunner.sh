@@ -50,7 +50,7 @@ runner () {
 		local pid=$! # Potential race condition if pid is not caught fast enough?
 		wait $pid
 		printf "\e[38;5;160;1m%s\e[0m\n" "$sep"
-		read -p "Press any key to continue ("$(($#-count - 1))" left)..."
+		read -p "Press enter to continue ("$(($#-count - 1))" left)..."
 		printf "\e[0m"
 		count=$((count+1))
 	done
